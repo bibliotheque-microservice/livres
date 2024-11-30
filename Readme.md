@@ -92,9 +92,10 @@ Once the service is running, you can use the following API endpoints to interact
 Fetches a list of books. You can filter the books by title and/or author.
 
 Example:
+
 ```bash
-    curl http://localhost:5000/books?title=Python   `
-````
+    curl http://localhost:5000/books?title=Python  
+```
 #### **POST /books**
 
 Adds a new book to the database. Example request body:
