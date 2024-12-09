@@ -1,6 +1,9 @@
+import pika
+import json
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -132,9 +135,87 @@ def check_availability(book_id):
         print(book)
         if not book:
             return jsonify({'error': 'Book not found'}), 404
+        # Publier le message dans RabbitMQ
+        message = {'book_id': book_id, 'availability': book.availability}
+        print(message)
+        publish_message_to_queue('availability_queue', message, app)
         return jsonify({'availability': book.availability}), 200
     except Exception as e:
         return jsonify({'error': 'Failed to check availability', 'message': str(e)}), 500
 
+def get_rabbitmq_connection(app):
+    credentials = pika.PlainCredentials('admin', 'admin')  # Remplacez par vos identifiants
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host='rabbitmq',  # Adresse de RabbitMQ
+        credentials=credentials
+    ))
+    return connection
+
+
+def publish_message_to_queue(queue_name, message, app):
+    connection = get_rabbitmq_connection(app)
+    channel = connection.channel()
+
+    # Déclarez une file d'attente
+    channel.queue_declare(queue=queue_name, durable=True)
+
+    # Publiez le message
+    channel.basic_publish(
+        exchange='',
+        routing_key=queue_name,
+        body=json.dumps(message),
+        properties=pika.BasicProperties(
+            delivery_mode=2  # Rend le message persistant
+        )
+    )
+
+    print(f"Message publié dans la file {queue_name}: {message}")
+    connection.close()
+
+def process_message(channel, method, properties, body):
+    """Traiter les messages pour modifier la disponibilité."""
+    try:
+        data = json.loads(body)
+        book_id = data['book_id']
+        new_availability = not data['availability']  # Exemple : basculer la disponibilité
+
+        # Récupérer le livre dans la base de données
+        book = Book.query.get(book_id)
+        if not book:
+            print(f"Book ID {book_id} not found.")
+        else:
+            # Modifier la disponibilité
+            book.availability = new_availability
+            db.session.commit()
+            print(f"Book ID {book_id} availability updated to {new_availability}")
+
+            # Publier une réponse (si nécessaire)
+            response_message = {
+                'book_id': book_id,
+                'new_availability': new_availability
+            }
+            publish_message_to_queue('response_queue', response_message, app)
+        
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as e:
+        print(f"Failed to process message: {e}")
+        channel.basic_nack(delivery_tag=method.delivery_tag)
+
+def start_consumer():
+    connection = get_rabbitmq_connection(app)
+    channel = connection.channel()
+
+    # Déclarez la file d'attente
+    channel.queue_declare(queue='availability_queue', durable=True)
+
+    # Consommer les messages
+    channel.basic_consume(queue='availability_queue', on_message_callback=process_message)
+
+    print("En attente des messages sur la file 'availability_queue'...")
+    channel.start_consuming()
+
 if __name__ == '__main__':
+    # Lancer le consommateur dans un thread séparé
+    consumer_thread = Thread(target=start_consumer, daemon=True)
+    consumer_thread.start()
     app.run(debug=True)
