@@ -1,13 +1,19 @@
+
 services:
-  flask_app:
-    build: .
+  node_app:
+    build:
+      context: ./nodeapp/  # Certifique-se de que o código da sua aplicação Node.js está neste diretório
     ports:
-      - "5000:5000"
+      - "3000:3000"
     depends_on:
       - mariadb_db
       - rabbitmq
     environment:
-      - DATABASE_URI=mysql+pymysql://username:password@mariadb_db:3306/library_db
+      - DB_HOST=mariadb_db
+      - DB_USER=username
+      - DB_PASSWORD=password
+      - DB_NAME=library_db
+      - RABBITMQ_URI=amqp://admin:admin@rabbitmq
 
   mariadb_db:
     image: mariadb:10.5
@@ -18,7 +24,7 @@ services:
       MYSQL_DATABASE: library_db
     ports:
       - "3306:3306"
-  
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     environment:
@@ -30,8 +36,8 @@ services:
       timeout: 5s
       retries: 5
     ports:
-        - 5672:5672
-        - 15672:15672
+      - 5672:5672
+      - 15672:15672
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
       - rabbitmq-log:/var/log/rabbitmq

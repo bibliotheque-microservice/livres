@@ -1,8 +1,23 @@
-FROM python:3.10-slim
+FROM node:16-alpine
+
+# Définir le répertoire de travail
 WORKDIR /app
-COPY . .
+
+# Copier les fichiers package.json et package-lock.json
+COPY package*.json ./
+
 COPY wait-for-it.sh /wait-for-it.sh
+
 RUN chmod +x /wait-for-it.sh
-RUN pip install --no-cache-dir -r requirements.txt
-EXPOSE 5000
-CMD ["/wait-for-it.sh", "db:5432", "--", "flask", "run", "--host=0.0.0.0"]
+
+# Installer les dépendances
+RUN npm install
+
+# Copier le code source
+COPY . .
+
+# Exposer le port utilisé par l'application
+EXPOSE 3000
+
+# Démarrer l'application
+CMD ["npm", "start"]
