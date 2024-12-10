@@ -87,7 +87,7 @@ chmod +x wait-for-it.sh
 
 Once the service is running, you can use the following API endpoints to interact with the library:
 
-#### **GET /books**
+#### **GET /v1/books**
 
 Fetches a list of books. You can filter the books by title and/or author.
 
@@ -96,7 +96,7 @@ Example:
 ```bash
     curl http://localhost:5000/books?title=Python  
 ```
-#### **POST /books**
+#### **POST /v1/books**
 
 Adds a new book to the database. Example request body:
 
@@ -109,7 +109,7 @@ Example:
 curl -X POST http://localhost:5000/books -H "Content-Type: application/json" -d '{"title": "The Pragmatic Programmer", "author": "David Thomas", "published_year": 1999, "isbn": "978-0201616224", "availability": true}'   
 ```
 
-#### **PUT /books/{book\_id}**
+#### **PUT /v1/books/{book\_id}**
 
 Updates an existing book by book\_id.
 
@@ -121,26 +121,26 @@ Example request body:
 Example:
 
 ```bash
-curl -X PUT http://localhost:5000/books/1 -H "Content-Type: application/json" -d '{"title": "The Pragmatic Programmer (Updated)", "author": "David Thomas", "published_year": 2000, "isbn": "978-0201616224", "availability": true}'
+curl -X PUT http://localhost:3000/v1/books/1 -H "Content-Type: application/json" -d '{"title": "The Pragmatic Programmer (Updated)", "author": "David Thomas", "published_year": 2000, "isbn": "978-0201616224", "availability": true}'
 ```
 
-#### **DELETE /books/{book\_id}**
+#### **DELETE /v1/books/{book\_id}**
 
 Deletes a book by its book\_id.
 
 Example:
 
 ```bash
-curl -X DELETE http://localhost:5000/books/1
+curl -X DELETE http://localhost:3000/v1/books/1
 ```
-#### **GET /books/{book\_id}/availability**
+#### **GET /v1/books/{book\_id}/availability**
 
 Checks the availability of a book by book\_id.
 
 Example:
 
 ```bash
-curl http://localhost:5000/books/1/availability
+curl http://localhost:3000/v1/books/1/availability
 ```
 
 Troubleshooting
