@@ -50,7 +50,7 @@ const rabbitConnection = async () => {
 };
 
 // Routes
-app.get("/books", async (req, res) => {
+app.get("/v1/books", async (req, res) => {
   try {
     const { title, author } = req.query;
     const where = {};
@@ -69,7 +69,7 @@ app.get("/books", async (req, res) => {
   }
 });
 
-app.post("/books", async (req, res) => {
+app.post("/v1/books", async (req, res) => {
   try {
     const { title, author, published_year, isbn, availability } = req.body;
     if (!title || !author)
@@ -98,7 +98,7 @@ app.post("/books", async (req, res) => {
   }
 });
 
-app.put("/books/:id", async (req, res) => {
+app.put("/v1/books/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { title, author, published_year, isbn, availability } = req.body;
@@ -115,7 +115,7 @@ app.put("/books/:id", async (req, res) => {
   }
 });
 
-app.delete("/books/:id", async (req, res) => {
+app.delete("/v1/books/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -131,7 +131,7 @@ app.delete("/books/:id", async (req, res) => {
   }
 });
 
-app.get("/books/:id/availability", async (req, res) => {
+app.get("/v1/books/:id/availability", async (req, res) => {
   try {
     const { id } = req.params;
 
