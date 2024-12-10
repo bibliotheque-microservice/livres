@@ -3,6 +3,29 @@ const bodyParser = require("body-parser");
 const { Sequelize, DataTypes } = require("sequelize");
 const amqp = require("amqplib");
 const app = express();
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+
+// Configuration Swagger
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Library API",
+      version: "1.0.0",
+      description: "API pour gérer les livres d'une bibliothèque",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ],
+  },
+  apis: ["app.js"], // Chemin vers ce fichier ou les fichiers contenant les commentaires Swagger
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(bodyParser.json());
 
@@ -50,6 +73,39 @@ const rabbitConnection = async () => {
 };
 
 // Routes
+
+/**
+ * @swagger
+ * /v1/books:
+ *   post:
+ *     summary: Ajouter un nouveau livre
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - author
+ *             properties:
+ *               title:
+ *                 type: string
+ *               author:
+ *                 type: string
+ *               published_year:
+ *                 type: integer
+ *               isbn:
+ *                 type: string
+ *               availability:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Livre ajouté avec succès
+ *       400:
+ *         description: Erreur de validation
+ */
+
 app.get("/v1/books", async (req, res) => {
   try {
     const { title, author } = req.query;
@@ -68,6 +124,38 @@ app.get("/v1/books", async (req, res) => {
       .json({ error: "Failed to fetch books", message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /v1/books:
+ *   post:
+ *     summary: Ajouter un nouveau livre
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - author
+ *             properties:
+ *               title:
+ *                 type: string
+ *               author:
+ *                 type: string
+ *               published_year:
+ *                 type: integer
+ *               isbn:
+ *                 type: string
+ *               availability:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Livre ajouté avec succès
+ *       400:
+ *         description: Erreur de validation
+ */
 
 app.post("/v1/books", async (req, res) => {
   try {
@@ -98,6 +186,44 @@ app.post("/v1/books", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /v1/books/{id}:
+ *   put:
+ *     summary: Met à jour les informations d'un livre
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du livre à mettre à jour
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               author:
+ *                 type: string
+ *               published_year:
+ *                 type: integer
+ *               isbn:
+ *                 type: string
+ *               availability:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Livre mis à jour avec succès
+ *       404:
+ *         description: Livre non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+
 app.put("/v1/books/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -115,6 +241,27 @@ app.put("/v1/books/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /v1/books/{id}:
+ *   delete:
+ *     summary: Supprime un livre
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du livre à supprimer
+ *     responses:
+ *       200:
+ *         description: Livre supprimé avec succès
+ *       404:
+ *         description: Livre non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+
 app.delete("/v1/books/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,6 +277,34 @@ app.delete("/v1/books/:id", async (req, res) => {
       .json({ error: "Failed to delete book", message: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /v1/books/{id}/availability:
+ *   get:
+ *     summary: Vérifie la disponibilité d'un livre
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID du livre
+ *     responses:
+ *       200:
+ *         description: Disponibilité du livre
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 availability:
+ *                   type: boolean
+ *       404:
+ *         description: Livre non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
 
 app.get("/v1/books/:id/availability", async (req, res) => {
   try {
