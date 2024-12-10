@@ -157,3 +157,5 @@ chmod +x wait-for-it.sh
 *   **Service not starting**: If Docker Compose reports errors or the Flask app does not start, check the logs to ensure that MariaDB is up and that the wait-for-it.sh script successfully connected to the database before Flask starts.
     
 
+Note: attach a shell with vscode to see the logs look the folder logs
+
