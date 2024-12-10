@@ -322,8 +322,7 @@ app.delete("/v1/books/:id", async (req, res) => {
  *         description: ID du livre
  *     responses:
  *       200:
- *         description: Disp
- * onibilité du livre
+ *         description: Disponibilité du livre
  *         content:
  *           application/json:
  *             schema:
