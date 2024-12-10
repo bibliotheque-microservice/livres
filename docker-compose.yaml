@@ -2,7 +2,7 @@
 services:
   node_app:
     build:
-      context: ./nodeapp/  # Certifique-se de que o código da sua aplicação Node.js está neste diretório
+      context: .  # Certifique-se de que o código da sua aplicação Node.js está neste diretório
     ports:
       - "3000:3000"
     depends_on:
