@@ -148,8 +148,8 @@ app.get("/books/:id/availability", async (req, res) => {
 // Consommateur RabbitMQ
 const processMessage = async (msg) => {
   try {
-    const { bookId,livreId } = JSON.parse(msg.content.toString());
-    const book_id = bookId ? bookId : livreId;
+    const { LivreID,livreId } = JSON.parse(msg.content.toString());
+    const book_id = LivreID ? LivreID : livreId;
     const book = await Book.findByPk(book_id);
     if (!book) return console.error(`Book ID ${bookId} not found`);
     if (livreId) {
@@ -160,7 +160,7 @@ const processMessage = async (msg) => {
     console.log(
       `Book ID ${book_id} availability updated to ${newAvailability}`
       );
-    } else if(bookId) {
+    } else if(LivreID) {
       if (!book.availability)
         return console.error(`Book ID ${book_id} is available`);
       const newAvailability = !book.availability;
