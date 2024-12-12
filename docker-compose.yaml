@@ -3,17 +3,20 @@ services:
   node_app:
     build:
       context: .  # Certifique-se de que o código da sua aplicação Node.js está neste diretório
+    container_name: node_app
     ports:
       - "3000:3000"
     depends_on:
       - mariadb_db
-      - rabbitmq
     environment:
       - DB_HOST=mariadb_db
       - DB_USER=username
       - DB_PASSWORD=password
       - DB_NAME=library_db
       - RABBITMQ_URI=amqp://admin:admin@rabbitmq
+    networks:
+      - app_network
+
 
   mariadb_db:
     image: mariadb:10.5
@@ -22,26 +25,20 @@ services:
       MYSQL_USER: username
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: library_db
+    volumes:
+      - ./migrations/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     ports:
       - "3306:3306"
+    networks:
+      - app_network
 
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    environment:
-      RABBITMQ_DEFAULT_USER: admin 
-      RABBITMQ_DEFAULT_PASS: admin 
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - 5672:5672
-      - 15672:15672
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-      - rabbitmq-log:/var/log/rabbitmq
+
 
 volumes:
   rabbitmq-data:
   rabbitmq-log:
+
+
+networks:
+  app_network:
+    external: true

@@ -50,6 +50,7 @@ const Book = sequelize.define(
     updated_at: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
   },
   {
+    tableName: "Book", 
     timestamps: false,
   }
 );
@@ -358,26 +359,26 @@ app.get("/v1/books/:id/availability", async (req, res) => {
 // Consommateur RabbitMQ
 const processMessage = async (msg) => {
   try {
-    const { LivreID, livreId } = JSON.parse(msg.content.toString());
+    const { LivreID, livreId, disponible } = JSON.parse(msg.content.toString());
     const book_id = LivreID ? LivreID : livreId;
     const book = await Book.findByPk(book_id);
-    if (!book) return console.error(`Book ID ${bookId} not found`);
+    if (!book) return console.error(`Book ID ${book_id} not found`);
     if (livreId) {
-      if (book.availability)
-        return console.error(`Book ID ${book_id} not available`);
+      if (book.availability){
       const newAvailability = !book.availability;
       await book.update({ availability: newAvailability });
       logger.info(
         `Book ID ${book_id} availability updated to ${newAvailability}`
       );
+      }
     } else if (LivreID) {
-      if (!book.availability)
-        return console.error(`Book ID ${book_id} is available`);
-      const newAvailability = !book.availability;
-      await book.update({ availability: newAvailability });
-      logger.info(
-        `Book ID ${book_id} availability updated to ${newAvailability}`
-      );
+      if (!book.availability){
+        const newAvailability = !book.availability;
+        await book.update({ availability: newAvailability });
+        logger.info(
+          `Book ID ${book_id} availability updated to ${newAvailability}`
+        );
+      }
     }
 
     rabbitChannel.ack(msg);
